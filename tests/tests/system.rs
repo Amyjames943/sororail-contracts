@@ -957,6 +957,80 @@ fn recurring_subscription_charges_once_across_several_periods() {
     s.assert_nothing_lost(&parties);
 }
 
+/// Compose a stream and a vesting grant through one actor (#437): an
+/// employer funds a stream for a contractor, cancels it partway through, and
+/// uses the refunded unearned portion as the capital for a new vesting grant
+/// to the same person. The invariant is total conservation across BOTH
+/// contracts: every satoshi the employer committed is accounted for — paid
+/// to the contractor through the stream, held for them in the vesting grant,
+/// or back with the employer.
+#[test]
+fn cancelled_stream_refund_funds_a_new_vesting_grant() {
+    let s = System::new();
+    let contractor = Address::generate(&s.env);
+    let parties = [&contractor];
+
+    // --- Stream: 10/sec for 1000s = 10_000 total, cancellable. ---
+    let stream_rate: i128 = 10;
+    let stream_duration: u64 = 1_000;
+    let stream_total: i128 = stream_rate * i128::from(stream_duration);
+    s.stream.create(
+        &s.employer,
+        &contractor,
+        &s.token.address,
+        &stream_rate,
+        &START,
+        &(START + stream_duration),
+        &true,
+    );
+    assert_eq!(s.balance(&s.stream.address), stream_total);
+    assert_eq!(s.balance(&s.employer), MINT - stream_total);
+    assert_eq!(s.balance(&contractor), 0);
+    s.assert_nothing_lost(&parties);
+
+    // --- A quarter of the way through, cancel the stream. ---
+    s.at(START + stream_duration / 4);
+    s.stream.cancel();
+    let earned_so_far: i128 = stream_rate * i128::from(stream_duration / 4);
+    let refund = stream_total - earned_so_far;
+    assert_eq!(s.balance(&contractor), earned_so_far);
+    assert_eq!(s.balance(&s.stream.address), 0);
+    // The refund went back to the employer.
+    assert_eq!(s.balance(&s.employer), MINT - earned_so_far);
+    s.assert_nothing_lost(&parties);
+
+    // --- Fund a new vesting grant for the same contractor with exactly
+    // the refunded amount — no new capital from the employer. ---
+    let employer_before_vest = s.balance(&s.employer);
+    let vest_start = s.env.ledger().timestamp();
+    let vest_duration: u64 = 500;
+    s.vesting.create(
+        &s.employer,
+        &contractor,
+        &s.token.address,
+        &refund,
+        &vest_start,
+        &0, // no cliff
+        &vest_duration,
+        &true,
+    );
+    assert_eq!(s.balance(&s.vesting.address), refund);
+    assert_eq!(s.balance(&s.employer), employer_before_vest - refund);
+    s.assert_nothing_lost(&parties);
+
+    // --- Fast-forward to full vest; contractor claims the remainder. ---
+    s.at(vest_start + vest_duration);
+    let claimed = s.vesting.claim();
+    assert_eq!(claimed, refund);
+    assert_eq!(s.balance(&contractor), earned_so_far + refund);
+    assert_eq!(s.balance(&s.vesting.address), 0);
+    // Employer is back at the pre-stream baseline minus everything the
+    // contractor received: stream earnings + vesting payout = original
+    // stream deposit. Nothing leaked.
+    assert_eq!(s.balance(&s.employer), MINT - stream_total);
+    s.assert_nothing_lost(&parties);
+}
+
 /// Compose two contracts at the call site (#436): an escrow is released to a
 /// treasury account which, in the same workflow, fans the funds out to a list
 /// of recipients via `batch_payout`. The composition is advertised in the
