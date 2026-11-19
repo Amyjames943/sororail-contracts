@@ -13,6 +13,7 @@ use crate::{
 
 mod cancel;
 mod dispute;
+mod fee_on_transfer;
 mod fund;
 mod init;
 mod refund;

@@ -30,6 +30,29 @@ make check       # fmt-check, lint, test, build, docs and deployment checks
 The toolchain is pinned in `rust-toolchain.toml`; rustup will honour it
 automatically.
 
+### Pre-commit hooks (recommended)
+
+A `.pre-commit-config.yaml` ships at the repo root. Install the hooks once
+so every commit is checked with `cargo fmt`, `cargo clippy` and the
+standard hygiene checks (trailing whitespace, newline-at-EOF, line endings,
+merge markers, large files):
+
+```bash
+# One-time install of the pre-commit framework itself.
+pip install pre-commit        # or: brew install pre-commit
+
+# Register the Git hooks in this repo.
+pre-commit install
+
+# One-off: run all hooks against every tracked file.
+pre-commit run --all-files
+```
+
+On a warm cache the hook suite finishes in well under 30 seconds. A
+failing fmt hook prints the diff and refuses the commit — fix with
+`cargo fmt --all` and commit again. A failing clippy hook exits on any
+new warning; fix the warning rather than suppress it.
+
 ## What a complete PR looks like
 
 - [ ] Tests added, including an authorization test for any new privileged entry
