@@ -2,7 +2,7 @@ WASM_TARGET := wasm32v1-none
 WASM_DIR    := target/$(WASM_TARGET)/release
 CONTRACTS   := escrow stream vesting recurring batch_payout
 
-.PHONY: all build test test-all test-contracts fmt fmt-check lint audit optimize wasm-size specs clean ci coverage check-error-docs verify-deployments check-deployments check-wasm-sizes check-storage-footprint changelog check-changelog update-spec-snapshots check-spec-snapshots
+.PHONY: all build test test-all test-contracts fmt fmt-check lint audit optimize wasm-size specs clean ci coverage check-error-docs check-event-docs verify-deployments check-deployments check-wasm-sizes check-storage-footprint changelog check-changelog update-spec-snapshots check-spec-snapshots
 
 all: build test
 
@@ -74,7 +74,10 @@ specs: build
 check-error-docs:
 	./scripts/check_error_docs.sh
 
-ci: fmt-check lint test build check-error-docs check-deployments check-wasm-sizes check-storage-footprint
+check-event-docs:
+	./scripts/check_event_docs.sh
+
+ci: fmt-check lint test build check-error-docs check-event-docs check-deployments check-wasm-sizes check-storage-footprint
 
 check-deployments:
 	./scripts/check_deployments.sh

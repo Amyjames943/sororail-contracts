@@ -34,6 +34,11 @@ about token decimals, TTL, and contract immutability are answered in
 Each is independently deployable. Composition happens at the call site, not
 through inheritance.
 
+For how the crates fit together — the one-position-per-instance model, the role
+of `common`, and the storage, auth, TTL and error-numbering rules — start with
+[docs/architecture.md](docs/architecture.md). The full event schema for
+indexers is in [docs/events.md](docs/events.md).
+
 ## Layout
 
 ```
