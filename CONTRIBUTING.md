@@ -148,6 +148,24 @@ Rules of thumb:
   dependency fails or is cancelled.
 - **Formatting:** `cargo fmt`. Lints: `cargo clippy`, warnings denied.
 
+### Dependency hygiene checks
+
+Two required CI jobs guard the dependency graph:
+
+- `unused-deps` runs `cargo machete`, a fast textual scan for dependencies no
+  source file references. Because it does not compile anything, code generated
+  by a macro or a build script can look unused. If you hit one of those, confirm
+  the crate really is used, then add its name to
+  `[workspace.metadata.cargo-machete].ignored` in the workspace `Cargo.toml`
+  with a comment explaining why. A genuinely unused dependency must be
+  removed, not ignored.
+- `cargo-deny` runs `cargo deny check licenses bans` against `deny.toml`,
+  enforcing the SPDX allow-list and reporting duplicate versions and
+  non-crates.io sources. Vulnerability advisories are owned by the separate
+  `cargo audit` job — never add an advisory to `deny.toml` just to turn a red
+  job green. Run `cargo deny check` locally for the full policy, which also
+  rejects yanked crate versions.
+
 ## Fuzzing
 
 `contracts/common/fuzz` holds differential fuzz targets for
