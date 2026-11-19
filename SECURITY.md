@@ -57,6 +57,9 @@ Out of scope: findings that require a compromised wallet or leaked key,
 issues in the Stellar network or `soroban-sdk` itself (report those upstream),
 and anything that depends on deploying to mainnet, which we ask you not to do.
 
+For per-contract trust assumptions, attacker capabilities, mitigations and
+residual risks, see [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+
 ## Known limitations and design decisions
 
 ### Supported token assumptions
@@ -98,6 +101,19 @@ would otherwise be locked permanently in the `Disputed` state. To mitigate this:
 Integrators relying on escrow should document this assumption: arbiters are
 trusted to respond within 7 days of the original deadline, or funds become
 recoverable by the depositor unilaterally.
+
+### Token authorization revocation
+
+A Stellar Asset Contract with `AUTH_REQUIRED` and `AUTH_REVOCABLE` can
+deauthorize a stream recipient mid-stream. The token transfer then fails and the
+host rolls back the stream state, so the failed `withdraw` changes no balances
+or accounting. Recovery is for the token admin to call
+`StellarAssetClient::set_authorized(recipient, true)`; the accrued amount remains
+withdrawable and the next `withdraw` succeeds. If authorization cannot be
+restored, the sender can `cancel` to settle accrued funds to the recipient and
+refund the rest. This path is tested in
+[contracts/stream/src/test.rs](contracts/stream/src/test.rs) and analysed in
+[docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
 ## Public disclosure and security advisories
 

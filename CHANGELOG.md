@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Per-contract crate READMEs rendered through rustdoc, a per-contract threat
+  model, `source_repo` contract metadata, and a regression test proving that a
+  deauthorized recipient cannot corrupt a stream on a flagged Stellar Asset
+  Contract (#439, #442, #450, #451).
 - CLI invocation examples, TTL operator guidance, and a CI check requiring an
   Unreleased changelog entry for contract-affecting pull requests (#469, #470,
   #471).

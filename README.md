@@ -81,7 +81,9 @@ make ci         # everything CI runs
 
 For token movement diagrams, see [docs/fund-flows.md](docs/fund-flows.md). For
 the pinned verifiable build and the CI hash comparison, see
-[docs/reproducible-builds.md](docs/reproducible-builds.md).
+[docs/reproducible-builds.md](docs/reproducible-builds.md). For per-contract
+trust assumptions, mitigations and residual risks, see
+[docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
 ### Local quickstart smoke test
 
