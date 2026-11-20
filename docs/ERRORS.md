@@ -52,6 +52,7 @@ or renumbers a variant in `errors.rs`.
 | 83 | `RecurringExhausted` | recurring | `max_periods` has been exhausted. |
 | 100 | `BatchEmpty` | batch_payout | The recipient list was empty. |
 | 101 | `BatchTooLarge` | batch_payout | The recipient list exceeds the documented maximum. |
+| 103 | `BatchRecipientIsContract` | batch_payout | A contract-address recipient was supplied while `only_eoa` was `true`. |
 
 `102` (`BatchDuplicateRecipient`) was removed before any release and stays
 burned rather than reused; see the comment at the end of `errors.rs`.
